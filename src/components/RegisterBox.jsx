@@ -36,7 +36,7 @@ export default function RegisterBox() {
     return (
         <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
             <h1 className="font-extrabold text-2xl text-center mb-6">
-                Register for the HDS Training Platform
+                Register for the CHIL Training Platform
             </h1>
             {error && <p className="text-red-500 text-center mb-4">{error}</p>}
             <form className="flex flex-col gap-5" onSubmit={handleSubmit}>

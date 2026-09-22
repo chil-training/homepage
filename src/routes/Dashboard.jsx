@@ -1,5 +1,4 @@
 import HomeHero from "../components/HomeHero";
-import TrainingApp from "../components/TrainingApp";
 import { AuthContext } from "../context/AuthContext";
 
 import { useContext } from "react"
@@ -12,7 +11,7 @@ const Dashboard = ({ events, challenges }) => {
 
     return (
         <div>
-            {user ? <TrainingApp /> : <HomeHero events={events} challenges={challenges} />}
+            <HomeHero events={events} challenges={challenges} loggedIn={!!user} />
         </div>
     )
 

@@ -14,7 +14,7 @@ export default function ChallengesPage({ challenges }) {
     itemListElement: challenges.map((challenge, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `${siteUrl}/challenges/${challenge.id}`,
+      url: `${siteUrl}/challenges/${challenge.id}/`,
       name: challenge.title,
     })),
   };
@@ -28,9 +28,9 @@ export default function ChallengesPage({ challenges }) {
         <meta property="og:title" content="Hackathon Challenges | CHIL Training" />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`${siteUrl}/challenges`} />
+        <meta property="og:url" content={`${siteUrl}/challenges/`} />
         <meta name="twitter:card" content="summary" />
-        <link rel="canonical" href={`${siteUrl}/challenges`} key="canonical" />
+        <link rel="canonical" href={`${siteUrl}/challenges/`} key="canonical" />
         {challenges.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />}
       </Head>
       <Navbar />
@@ -50,6 +50,9 @@ export default function ChallengesPage({ challenges }) {
   );
 }
 
-export async function getServerSideProps() {
+// Static export bakes this in at build time: a challenge added, edited, or
+// removed in the admin panel won't show up here until the next deploy
+// rebuilds the site.
+export async function getStaticProps() {
   return { props: { challenges: selectPublishedChallenges(await fetchPublicCollection("hackathonChallenges")) } };
 }

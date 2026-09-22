@@ -38,16 +38,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build
-        env:
-          VITE_BASE_PATH: "/"
         run: npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          # Upload dist folder
-          path: "./dist"
+          # Next's static export (output: "export") writes here
+          path: "./out"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

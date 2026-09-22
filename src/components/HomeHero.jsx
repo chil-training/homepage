@@ -5,10 +5,18 @@ import HackathonGrid from "./HackathonGrid";
 import AllEvents from "./AllEvents";
 import Footer from "./Footer";
 
-const HomeHero = ({ events, challenges }) => {
+const HomeHero = ({ events, challenges, loggedIn }) => {
     return (
         <>
-        <section className="w-full bg-gradient-to-tr from-blue-900 to-purple-950 px-4 pt-36 pb-20">
+        {loggedIn && (
+            <Link
+                href="/training/"
+                className="mt-16 block w-full bg-cyan-300 px-4 py-3 text-center font-semibold text-slate-950 transition hover:bg-cyan-200"
+            >
+                Looking for your training? <span className="underline">Click here</span>
+            </Link>
+        )}
+        <section className={`w-full bg-gradient-to-tr from-blue-900 to-purple-950 px-4 pb-20 ${loggedIn ? "pt-16" : "pt-36"}`}>
             <div className="mx-auto flex max-w-7xl items-center">
                 <div className="flex flex-col justify-center">
                     <p className="mb-5 text-sm font-bold uppercase tracking-[0.2em] text-cyan-300">Civic Health Innovation Labs</p>
@@ -39,9 +47,24 @@ const HomeHero = ({ events, challenges }) => {
                     <div>
                         <p className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-300">Training gateway</p>
                         <h2 className="mt-3 text-4xl font-bold text-white">Continue your health data training</h2>
-                        <p className="mt-4 max-w-xl text-lg leading-relaxed text-slate-200">Sign in to access your courses, themes, and learning events.</p>
+                        <p className="mt-4 max-w-xl text-lg leading-relaxed text-slate-200">
+                            {loggedIn
+                                ? "Head to your training area to access your courses, themes, and learning events."
+                                : "Sign in to access your courses, themes, and learning events."}
+                        </p>
                     </div>
-                    <div className="justify-self-center lg:justify-self-end"><LoginBox /></div>
+                    <div className="justify-self-center lg:justify-self-end">
+                        {loggedIn ? (
+                            <Link
+                                href="/training/"
+                                className="inline-flex rounded-lg bg-cyan-300 px-6 py-3 font-bold text-slate-950 transition hover:bg-cyan-200"
+                            >
+                                Go to my training
+                            </Link>
+                        ) : (
+                            <LoginBox />
+                        )}
+                    </div>
                 </div>
             </div>
         </section>

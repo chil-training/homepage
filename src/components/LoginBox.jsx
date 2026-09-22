@@ -26,7 +26,7 @@ const LoginBox = () => {
     return (
         <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
             <h1 className="font-extrabold text-2xl text-center mb-6">
-                Login to HDS Training Platform
+                Login to CHIL Training Platform
             </h1>
             {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-center">{error}</div>}
             <form className="flex flex-col gap-5" onSubmit={handleSubmit}>

@@ -10,7 +10,7 @@
 // reads — `publicEvents` and `hackathonChallenges`. Never route authenticated
 // course content through here; it has no user credentials and would be denied.
 
-import { firebaseConfig } from "../firebase_config";
+import { firebaseConfig } from "../firebase_config.js";
 
 const BASE = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents`;
 

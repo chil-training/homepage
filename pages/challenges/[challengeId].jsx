@@ -7,7 +7,7 @@ import { selectPublishedChallenges } from "../../src/utils/events";
 const siteUrl = "https://chil-training.co.uk";
 
 export default function ChallengePage({ challenge, position, related }) {
-  const canonical = `${siteUrl}/challenges/${challenge.id}`;
+  const canonical = `${siteUrl}/challenges/${challenge.id}/`;
   const description = challenge.summary || `A CHIL health and life sciences hackathon challenge: ${challenge.title}.`;
 
   return (
@@ -31,7 +31,20 @@ export default function ChallengePage({ challenge, position, related }) {
 
 // The whole collection is read so the page knows its position in the numbered
 // set and can offer the others; it is ten small documents.
-export async function getServerSideProps({ params }) {
+//
+// Static export bakes this in at build time: a challenge added or edited in
+// the admin panel won't appear/update here until the next deploy rebuilds
+// the site.
+export async function getStaticPaths() {
+  const challenges = selectPublishedChallenges(await fetchPublicCollection("hackathonChallenges"));
+
+  return {
+    paths: challenges.map((challenge) => ({ params: { challengeId: challenge.id } })),
+    fallback: false,
+  };
+}
+
+export async function getStaticProps({ params }) {
   const challenges = selectPublishedChallenges(await fetchPublicCollection("hackathonChallenges"));
   const index = challenges.findIndex((item) => item.id === params.challengeId);
 

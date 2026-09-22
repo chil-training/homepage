@@ -33,7 +33,7 @@ const FirstTimeSetup = ({ uid }) => {
     return (
         <div className="flex items-center justify-center h-screen">
             <div className="p-8 bg-white rounded-2xl shadow-2xl">
-                <h1 className="text-2xl font-bold">Welcome to the HDS Training Platform!</h1>
+                <h1 className="text-2xl font-bold">Welcome to the CHIL Training Platform!</h1>
                 <p className="my-4">This is your first time here. Let&apos;s get you set up.</p>
                 <form className="flex flex-col" onSubmit={handleSubmit}>
                     <label>What would you like us to call you?</label>

@@ -7,11 +7,8 @@ import {
   setDoc,
   deleteDoc,
   doc,
-  serverTimestamp,
 } from "firebase/firestore";
 import Link from "next/link";
-import { ACCENT_KEYS } from "../data/challengeAccents";
-import { DEFAULT_CHALLENGES } from "../data/defaultChallenges";
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -643,7 +640,7 @@ const GuidesTab = () => {
               </div>
               <div className="flex gap-2 shrink-0">
                 <Link
-                  href={`/guide/${selectedCourse}_${selectedTheme}_${guide.id}`}
+                  href={`/guide?guideId=${selectedCourse}_${selectedTheme}_${guide.id}`}
                   target="_blank"
                   className="px-4 py-2 rounded-md text-sm font-semibold bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors"
                 >
@@ -747,279 +744,6 @@ const GuidesTab = () => {
   );
 };
 
-// ---------------------------------------------------------------------------
-// Hackathon Challenges Tab
-// ---------------------------------------------------------------------------
-
-const ChallengesTab = () => {
-  const [challenges, setChallenges] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [status, setStatus] = useState(null);
-  const [preview, setPreview] = useState(false);
-  const [seeding, setSeeding] = useState(false);
-
-  const emptyForm = {
-    id: "",
-    title: "",
-    summary: "",
-    accent: "slate",
-    index: "0",
-    audience: "Open to undergraduates and the public",
-    published: true,
-    markdown_content: "",
-  };
-  const [form, setForm] = useState(emptyForm);
-
-  const fetchChallenges = async () => {
-    setLoading(true);
-    const snap = await getDocs(collection(db, "hackathonChallenges"));
-    const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    list.sort((a, b) => (a.index ?? 99) - (b.index ?? 99));
-    setChallenges(list);
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchChallenges(); }, []);
-
-  const openCreate = () => {
-    setForm({ ...emptyForm, index: String(challenges.length) });
-    setPreview(false);
-    setModal({ mode: "create" });
-  };
-
-  const openEdit = (challenge) => {
-    setForm({
-      id: challenge.id,
-      title: challenge.title || "",
-      summary: challenge.summary || "",
-      accent: challenge.accent || "slate",
-      index: String(challenge.index ?? 0),
-      audience: challenge.audience || "",
-      published: challenge.published !== false,
-      markdown_content: challenge.markdown_content || "",
-    });
-    setPreview(false);
-    setModal({ mode: "edit" });
-  };
-
-  const handleSave = async () => {
-    const id = form.id.trim();
-    if (!id || !form.title.trim()) {
-      setStatus({ type: "error", message: "Challenge ID and Title are required." });
-      return;
-    }
-    // The ID is the public URL at /challenges/<id>, so keep it to a clean slug.
-    if (!/^[a-z0-9-]+$/.test(id)) {
-      setStatus({ type: "error", message: "Challenge ID must be lower-case letters, numbers and hyphens only." });
-      return;
-    }
-    try {
-      await setDoc(
-        doc(db, "hackathonChallenges", id),
-        {
-          title: form.title.trim(),
-          summary: form.summary.trim(),
-          accent: form.accent,
-          index: parseInt(form.index, 10) || 0,
-          audience: form.audience.trim(),
-          published: form.published,
-          markdown_content: form.markdown_content,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
-      setStatus({ type: "success", message: modal.mode === "create" ? "Challenge created." : "Challenge updated." });
-      setModal(null);
-      fetchChallenges();
-    } catch (e) {
-      setStatus({ type: "error", message: e.message });
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      await deleteDoc(doc(db, "hackathonChallenges", deleteTarget.id));
-      setStatus({ type: "success", message: "Challenge deleted." });
-      setDeleteTarget(null);
-      fetchChallenges();
-    } catch (e) {
-      setStatus({ type: "error", message: e.message });
-    }
-  };
-
-  // One-off helper for an empty collection: writes the ten original challenges.
-  // Existing documents are left untouched, so it never overwrites edited copy.
-  const handleSeed = async () => {
-    setSeeding(true);
-    try {
-      const existing = new Set(challenges.map((challenge) => challenge.id));
-      const missing = DEFAULT_CHALLENGES.filter((challenge) => !existing.has(challenge.id));
-
-      await Promise.all(missing.map(({ id, ...fields }) =>
-        setDoc(doc(db, "hackathonChallenges", id), { ...fields, updatedAt: serverTimestamp() })));
-
-      setStatus({
-        type: "success",
-        message: missing.length === 0
-          ? "All ten default challenges already exist; nothing was changed."
-          : `Added ${missing.length} default challenge${missing.length === 1 ? "" : "s"}.`,
-      });
-      fetchChallenges();
-    } catch (e) {
-      setStatus({ type: "error", message: e.message });
-    } finally {
-      setSeeding(false);
-    }
-  };
-
-  return (
-    <div>
-      <StatusBanner status={status} />
-
-      <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-        Challenges are public. Each one is published at <span className="font-mono">/challenges/&lt;id&gt;</span> and listed on the homepage and <span className="font-mono">/challenges</span>.
-      </div>
-
-      <SectionHeader title="Hackathon Challenges" onAdd={openCreate} />
-
-      {loading ? (
-        <p className="text-gray-500 text-sm">Loading...</p>
-      ) : challenges.length === 0 ? (
-        <div className="grid gap-3">
-          <p className="text-gray-500 text-sm">No challenges found.</p>
-          <div>
-            <Btn onClick={handleSeed} disabled={seeding}>
-              {seeding ? "Adding..." : "Add the ten default challenges"}
-            </Btn>
-          </div>
-        </div>
-      ) : (
-        <div className="grid gap-3">
-          {challenges.map((challenge) => (
-            <div key={challenge.id} className="border border-gray-200 rounded-lg p-4 flex items-start justify-between gap-4 bg-white">
-              <div>
-                <p className="font-semibold text-gray-900">
-                  {challenge.title}
-                  {challenge.published === false && (
-                    <span className="ml-2 rounded-full bg-gray-200 px-2 py-0.5 text-xs font-semibold text-gray-700">Draft</span>
-                  )}
-                </p>
-                <p className="text-xs text-gray-500 font-mono mt-0.5">ID: {challenge.id} · index: {challenge.index ?? "—"} · accent: {challenge.accent || "slate"}</p>
-                {challenge.summary && <p className="text-sm text-gray-600 mt-1 line-clamp-2">{challenge.summary}</p>}
-              </div>
-              <div className="flex gap-2 shrink-0">
-                <Link
-                  href={`/challenges/${challenge.id}`}
-                  target="_blank"
-                  className="px-4 py-2 rounded-md text-sm font-semibold bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors"
-                >
-                  View
-                </Link>
-                <Btn variant="ghost" onClick={() => openEdit(challenge)}>Edit</Btn>
-                <Btn variant="danger" onClick={() => setDeleteTarget(challenge)}>Delete</Btn>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {modal && (
-        <Modal
-          title={modal.mode === "create" ? "New Challenge" : `Edit Challenge: ${form.title}`}
-          onClose={() => setModal(null)}
-        >
-          <div className="flex flex-col gap-4">
-            <Input
-              label="Challenge ID (used in the public URL, e.g. healthier-starts)"
-              value={form.id}
-              onChange={(v) => setForm((f) => ({ ...f, id: v }))}
-              placeholder="healthier-starts"
-              disabled={modal.mode === "edit"}
-            />
-            <Input
-              label="Title"
-              value={form.title}
-              onChange={(v) => setForm((f) => ({ ...f, title: v }))}
-              placeholder="Healthier starts"
-            />
-            <Textarea
-              label="Summary (shown on the challenge cards)"
-              value={form.summary}
-              onChange={(v) => setForm((f) => ({ ...f, summary: v }))}
-              placeholder="Design a data-informed service that..."
-              rows={3}
-            />
-            <Select
-              label="Accent colour"
-              value={form.accent}
-              onChange={(v) => setForm((f) => ({ ...f, accent: v }))}
-              options={ACCENT_KEYS}
-            />
-            <Input
-              label="Index (display order)"
-              type="number"
-              value={form.index}
-              onChange={(v) => setForm((f) => ({ ...f, index: v }))}
-              placeholder="0"
-            />
-            <Input
-              label="Audience (optional)"
-              value={form.audience}
-              onChange={(v) => setForm((f) => ({ ...f, audience: v }))}
-              placeholder="Open to undergraduates and the public"
-            />
-            <Checkbox
-              label="Published"
-              checked={form.published}
-              onChange={(v) => setForm((f) => ({ ...f, published: v }))}
-              hint="Unpublished challenges are hidden from the site and return a 404."
-            />
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-semibold text-gray-700">Full brief (Markdown)</label>
-                <button
-                  type="button"
-                  onClick={() => setPreview((p) => !p)}
-                  className="text-xs text-slate-600 underline"
-                >
-                  {preview ? "Edit" : "Preview"}
-                </button>
-              </div>
-              {preview ? (
-                <div className="border border-gray-300 rounded-md p-3 min-h-32 prose prose-sm max-w-none overflow-auto bg-gray-50">
-                  <MarkdownPreview content={form.markdown_content} />
-                </div>
-              ) : (
-                <textarea
-                  value={form.markdown_content}
-                  onChange={(e) => setForm((f) => ({ ...f, markdown_content: e.target.value }))}
-                  rows={12}
-                  placeholder="## The challenge&#10;&#10;What teams are being asked to solve..."
-                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 font-mono"
-                />
-              )}
-            </div>
-            <div className="flex gap-3 justify-end pt-2">
-              <Btn variant="ghost" onClick={() => setModal(null)}>Cancel</Btn>
-              <Btn onClick={handleSave}>Save</Btn>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {deleteTarget && (
-        <ConfirmModal
-          message={`Delete challenge "${deleteTarget.title}" (${deleteTarget.id})? Its public page will stop working.`}
-          onConfirm={handleDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      )}
-    </div>
-  );
-};
-
 // Lazy markdown preview — reuses react-markdown already in the project
 import Markdown from "react-markdown";
 const MarkdownPreview = ({ content }) => (
@@ -1034,7 +758,6 @@ const TABS = [
   { id: "courses", label: "Courses" },
   { id: "themes", label: "Themes" },
   { id: "guides", label: "Guides" },
-  { id: "challenges", label: "Challenges" },
 ];
 
 const Admin = () => {
@@ -1065,7 +788,7 @@ const Admin = () => {
     <div className="py-32 container mx-auto px-4">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900">Admin Panel</h1>
-        <p className="text-gray-500 mt-1 text-sm">Manage courses, themes, guides and public hackathon challenges directly in the browser.</p>
+        <p className="text-gray-500 mt-1 text-sm">Manage courses, themes and guides directly in the browser.</p>
       </div>
 
       {/* Tab bar */}
@@ -1089,7 +812,6 @@ const Admin = () => {
       {activeTab === "courses" && <CoursesTab />}
       {activeTab === "themes" && <ThemesTab />}
       {activeTab === "guides" && <GuidesTab />}
-      {activeTab === "challenges" && <ChallengesTab />}
     </div>
   );
 };

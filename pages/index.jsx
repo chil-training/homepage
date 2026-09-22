@@ -27,7 +27,7 @@ export default function HomePage({ events, challenges }) {
     itemListElement: upcomingEvents.map((event, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `https://chil-training.co.uk/events/${event.id}`,
+      url: `https://chil-training.co.uk/events/${event.id}/`,
       name: event.title,
     })),
   };
@@ -51,7 +51,10 @@ export default function HomePage({ events, challenges }) {
   </>;
 }
 
-export async function getServerSideProps() {
+// Static export bakes the challenges list in at build time: a challenge
+// added, edited, or removed in the admin panel won't show up on the
+// signed-out homepage until the next deploy rebuilds the site.
+export async function getStaticProps() {
   const hackathonChallenges = await fetchPublicCollection("hackathonChallenges");
 
   return {

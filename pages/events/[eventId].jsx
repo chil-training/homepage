@@ -7,7 +7,7 @@ import { isPastEvent, isPublishedEvent } from "../../src/utils/events";
 const siteUrl = "https://chil-training.co.uk";
 
 export default function PublicEventPage({ event }) {
-  const canonical = `${siteUrl}/events/${event.id}`;
+  const canonical = `${siteUrl}/events/${event.id}/`;
   const description = event.description || `A CHIL event in Liverpool City Region: ${event.title}.`;
 
   const structuredData = {
@@ -44,7 +44,14 @@ export default function PublicEventPage({ event }) {
   );
 }
 
-export async function getServerSideProps({ params }) {
+export async function getStaticPaths() {
+  return {
+    paths: EVENTS.filter(isPublishedEvent).map((event) => ({ params: { eventId: event.id } })),
+    fallback: false,
+  };
+}
+
+export async function getStaticProps({ params }) {
   const event = EVENTS.find((candidate) => candidate.id === params.eventId) || null;
 
   // Unpublished and non-CHIL events must not be reachable by guessing the URL.

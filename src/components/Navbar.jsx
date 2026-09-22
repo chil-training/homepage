@@ -19,7 +19,10 @@ const Navbar = () => {
             <div className="h-16 mx-auto container px-4 flex align-middle justify-between text-white">
                 <div className="flex align-middle items-center gap-8">
                     <Link href="/" className="text-2xl font-bold self-center">
-                        <h1 className="text-2xl font-bold self-center">HDS Training</h1>
+                        <h1 className="text-2xl font-bold self-center">CHIL Training</h1>
+                    </Link>
+                    <Link href="/training/" className="self-center hover:text-slate-200">
+                        Training
                     </Link>
                 </div>
                 {user ? (

@@ -2,7 +2,7 @@
 // the browser (UpcomingEvents) and the server (homepage, sitemap, detail pages)
 // have to agree on it. Documented for editors in FIREBASE_PUBLIC_EVENTS.md.
 
-import { asDate, timeOf } from "./dates";
+import { asDate, timeOf } from "./dates.js";
 
 export function isPublishedEvent(event) {
   return event?.published === true && event?.organiser === "CHIL";

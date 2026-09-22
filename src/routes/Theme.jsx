@@ -77,7 +77,7 @@ const Theme = () => {
                         <div>
                             <ul className="list-disc list-inside grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {guideData.map((guide, index) => (
-                                    <Link href={`/guide/${course_code}_${theme_id}_${guide.id}`} key={index}>
+                                    <Link href={`/guide?guideId=${course_code}_${theme_id}_${guide.id}`} key={index}>
                                         <Card item={guide} />
                                     </Link>
                                 ))}

@@ -18,9 +18,9 @@ export default function EventsPage({ events }) {
         <meta property="og:title" content="Events | CHIL Training" />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`${siteUrl}/events`} />
+        <meta property="og:url" content={`${siteUrl}/events/`} />
         <meta name="twitter:card" content="summary" />
-        <link rel="canonical" href={`${siteUrl}/events`} key="canonical" />
+        <link rel="canonical" href={`${siteUrl}/events/`} key="canonical" />
       </Head>
       <Navbar />
       <main className="bg-slate-50 px-4 pb-20 pt-36">
@@ -69,6 +69,6 @@ export default function EventsPage({ events }) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   return { props: { events: selectAllPublishedEvents(EVENTS) } };
 }

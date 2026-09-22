@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase_config";
-import { Link, useNavigate } from "react-router";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 const LoginBox = () => {
 
-    const navigate = useNavigate();
+    const router = useRouter();
     const [error, setError] = useState(null);
 
     const handleSubmit = async (e) => {
@@ -16,7 +17,7 @@ const LoginBox = () => {
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 console.log("User logged in:", userCredential.user);
-                navigate("/")
+                router.push("/")
             }).catch((error) => {
                 setError(error.message);
             });
@@ -51,10 +52,10 @@ const LoginBox = () => {
                 </button>
             </form>
             <div className="mt-4 text-center text-sm text-gray-500">
-                Don&apos;t have an account? <Link to="/auth/register" className="text-blue-600 hover:underline">Sign up</Link>
+                Don&apos;t have an account? <Link href="/auth/register" className="text-blue-600 hover:underline">Sign up</Link>
             </div>
             <div className="mt-4 text-center text-sm text-gray-500">
-                Forgot your password? <Link to="/auth/forgot-password" className="text-blue-600 hover:underline">Click here</Link>
+                Forgot your password? <a href="mailto:hds-training@liverpool.ac.uk" className="text-blue-600 hover:underline">Contact support</a>
             </div>
         </div>
     )

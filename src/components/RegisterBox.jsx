@@ -2,11 +2,12 @@ import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebase_config";
 import { setDoc, doc } from "firebase/firestore";
-import { Link, useNavigate } from "react-router";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function RegisterBox() {
 
-    const navigate = useNavigate();
+    const router = useRouter();
     const [error, setError] = useState(null);
 
     const handleSubmit = async (e) => {
@@ -20,10 +21,10 @@ export default function RegisterBox() {
             const user = userCred.user;
 
             // Add the user to Firestore with metadata
-            const userRef = await setDoc(doc(db, "users", user.uid), {
+            await setDoc(doc(db, "users", user.uid), {
                 first_time: true,
             }).then(() => {
-                navigate("/");
+                router.push("/");
             })
         } catch (error) {
             setError(error.message);
@@ -61,7 +62,7 @@ export default function RegisterBox() {
                 </button>
             </form>
             <div className="mt-4 text-center text-sm text-gray-500">
-                Already have an account? <Link to="/auth/login" className="text-blue-600 hover:underline">Log in</Link>
+                Already have an account? <Link href="/auth/login" className="text-blue-600 hover:underline">Log in</Link>
             </div>
         </div>
     )

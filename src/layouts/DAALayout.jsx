@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Card from "../components/Card";
 import EventCard from "../components/EventCard";
 import CPDTrainingCard from "../components/CPDTrainingCard";
-import { Link } from "react-router";
+import Link from "next/link";
 
 const DAALayout = ({ course, themes, events }) => {
 
@@ -55,7 +55,7 @@ const DAALayout = ({ course, themes, events }) => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {events.map((event, index) => (
-                            <Link key={index} to={event.link}>
+                            <Link key={index} href={`/event/${course.id}_${event.id}`}>
                                 <EventCard item={event} />
                             </Link>
                         ))}
@@ -75,7 +75,7 @@ const DAALayout = ({ course, themes, events }) => {
                 {/* Primary Theme - Featured */}
                 <div className="mb-6">
                     <Link
-                        to={`/theme/${course.id}_${primary_theme.id}`}
+                        href={`/theme/${course.id}_${primary_theme.id}`}
                         className="block"
                     >
                         <div className="relative">
@@ -90,7 +90,7 @@ const DAALayout = ({ course, themes, events }) => {
                         {other_themes.map((theme, index) => (
                             <Link
                                 key={index}
-                                to={`/theme/${course.id}_${theme.id}`}
+                                href={`/theme/${course.id}_${theme.id}`}
                             >
                                 <Card item={theme} />
                             </Link>
@@ -104,4 +104,4 @@ const DAALayout = ({ course, themes, events }) => {
     );
 }
 
-export default DAALayout 
+export default DAALayout

@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 
-const firebaseConfig = {
+export const firebaseConfig = {
     apiKey: "AIzaSyDLO-NA970nW-QA59pZsDdwoSPlVt5dUlY",
     authDomain: "hds-training-fa4f8.firebaseapp.com",
     projectId: "hds-training-fa4f8",
@@ -15,5 +15,9 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);    
+
+// Authentication and Firestore are browser-only in this app. Keeping their
+// initialisation behind this guard lets Next render the public page shell on
+// the server without attempting to access browser storage.
+export const auth = typeof window === "undefined" ? null : getAuth(app);
+export const db = typeof window === "undefined" ? null : getFirestore(app);

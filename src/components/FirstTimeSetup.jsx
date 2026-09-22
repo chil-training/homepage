@@ -1,11 +1,11 @@
 import { db } from "../firebase_config";
 import { setDoc, doc } from "firebase/firestore";
-import { useNavigate } from "react-router";
+import { useRouter } from "next/router";
 
 
 const FirstTimeSetup = ({ uid }) => {
 
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -24,7 +24,7 @@ const FirstTimeSetup = ({ uid }) => {
             admin: false,
         }, { merge: true }).then(() => {
             console.log("Document successfully updated!");
-            navigate(0);
+            router.reload();
         }).catch((error) => {
             console.error("Error updating document: ", error);
         });

@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import Link from "next/link";
 import DAALayout from "../layouts/DAALayout";
 import Card from "./Card";
 
@@ -16,7 +16,7 @@ const Course = ({ course, themes, events }) => {
                         <div className="mt-8">
                             <h2 className="text-2xl font-semibold mb-4">Events</h2>
                             {events.map((event, index) => (
-                                <Link key={index} to={`/event/${course.id}_${event.id}`} >
+                                <Link key={index} href={`/event/${course.id}_${event.id}`} >
                                     <Card item={event} />
                                 </Link>
                             ))}
@@ -29,7 +29,7 @@ const Course = ({ course, themes, events }) => {
                         <div className="mt-8">
                             <h2 className="text-2xl font-semibold mb-4">Themes</h2>
                             {themes.map((theme, index) => (
-                                <Link key={index} to={`/theme/${course.id}_${theme.id}`} >
+                                <Link key={index} href={`/theme/${course.id}_${theme.id}`} >
                                     <Card item={theme} />
                                 </Link>
                             ))}

@@ -1,23 +1,23 @@
-import { useParams } from "react-router";
+import { useRouter } from "next/router";
 import { useContext, useState, useEffect } from "react";
-import { AuthContext } from "../App";
+import { AuthContext } from "../context/AuthContext";
 import { getDoc, doc } from "firebase/firestore";
 import { db } from "../firebase_config";
-import { Link } from "react-router";
+import Link from "next/link";
 import CPDTrainingCard from "../components/CPDTrainingCard";
 import YouTube from "react-youtube";
 import Markdown from "react-markdown";
 
 const Guide = () => {
 
-  let params = useParams();
-  let guideId = params.guideId;
+  const router = useRouter();
+  const guideId = router.query.guideId;
 
   const { user, userMeta } = useContext(AuthContext);
   const [guideData, setGuideData] = useState(null);
 
   // Split slug into course_code, theme_id, and lesson_id
-  const [course_code, theme_id, guide_id] = guideId.split("_");
+  const [course_code, theme_id, guide_id] = typeof guideId === "string" ? guideId.split("_") : [];
 
   const fetchThemeData = async (course_code, theme_id, guide_id) => {
     const docRef = doc(db, "courses", course_code, "themes", theme_id, "guides", guide_id);
@@ -29,7 +29,7 @@ const Guide = () => {
   }
 
   useEffect(() => {
-    if (userMeta && userMeta.course_code) {
+    if (userMeta && userMeta.course_code && course_code && theme_id && guide_id) {
       fetchThemeData(course_code, theme_id, guide_id);
     }
   }, [userMeta, course_code, theme_id, guide_id]);
@@ -48,7 +48,7 @@ const Guide = () => {
         </div>
         :
         <div className="py-32 container mx-auto px-4">
-          <p>Please <Link to="/auth/login" className="underline text-blue-700">log in</Link> to view this content.</p>
+          <p>Please <Link href="/auth/login" className="underline text-blue-700">log in</Link> to view this content.</p>
         </div>
 
       }

@@ -1,20 +1,20 @@
 import { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router";
-import { AuthContext } from "../App";
+import { useRouter } from "next/router";
+import { AuthContext } from "../context/AuthContext";
 import { db } from "../firebase_config";
 import { getDoc, getDocs, doc, collection } from "firebase/firestore";
-import { Link } from "react-router";
+import Link from "next/link";
 import Card from "../components/Card";
 import CPDTrainingCard from "../components/CPDTrainingCard";
 
 
 const Theme = () => {
 
-    let params = useParams()
-    let themeId = params.themeId
+    const router = useRouter();
+    const themeId = router.query.themeId;
 
     // Split slug into course_code, theme_id, and lesson_id 
-    const [course_code, theme_id] = themeId.split("_");
+    const [course_code, theme_id] = typeof themeId === "string" ? themeId.split("_") : [];
 
     const { user, userMeta } = useContext(AuthContext);
     const [guideData, setGuideData] = useState(null);
@@ -45,7 +45,7 @@ const Theme = () => {
     }
 
     useEffect(() => {
-        if (userMeta && userMeta.course_code) {
+        if (userMeta && userMeta.course_code && course_code && theme_id) {
             fetchThemeData(course_code, theme_id);
         }
     }, [userMeta, course_code, theme_id]);
@@ -54,7 +54,7 @@ const Theme = () => {
     if (!user) {
         return (
             <div className="py-32 container mx-auto">
-                <p>Please <Link to="/auth/login" className="underline text-blue-700">log in</Link> to view this content.</p>
+                <p>Please <Link href="/auth/login" className="underline text-blue-700">log in</Link> to view this content.</p>
             </div>
         )
     } else if (!themeData) {
@@ -77,7 +77,7 @@ const Theme = () => {
                         <div>
                             <ul className="list-disc list-inside grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {guideData.map((guide, index) => (
-                                    <Link to={`/guide/${course_code}_${theme_id}_${guide.id}`} key={index}>
+                                    <Link href={`/guide/${course_code}_${theme_id}_${guide.id}`} key={index}>
                                         <Card item={guide} />
                                     </Link>
                                 ))}

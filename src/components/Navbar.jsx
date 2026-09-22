@@ -1,24 +1,24 @@
 import { useContext } from "react";
-import { AuthContext } from "../App";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { AuthContext } from "../context/AuthContext";
 import { auth } from "../firebase_config";
-import { Link, redirect } from "react-router";
 
 
 const Navbar = () => {
 
     const { user, userMeta } = useContext(AuthContext);
+    const router = useRouter();
 
     const handleLogOut = () => {
-        auth.signOut().then(() => {
-            redirect("/");
-        });
+        auth?.signOut().then(() => router.push("/"));
     }
 
     return (
         <nav className="bg-slate-900 fixed top-0 w-full z-10 shadow-md">
             <div className="h-16 mx-auto container px-4 flex align-middle justify-between text-white">
                 <div className="flex align-middle items-center gap-8">
-                    <Link to="/" className="text-2xl font-bold self-center">
+                    <Link href="/" className="text-2xl font-bold self-center">
                         <h1 className="text-2xl font-bold self-center">HDS Training</h1>
                     </Link>
                 </div>
@@ -26,7 +26,7 @@ const Navbar = () => {
                     <div className="flex align-middle gap-8">
                         {userMeta && <p className="self-center block">Hi, {userMeta.nickname}</p>}
                         {userMeta && userMeta.admin && (
-                            <Link to="/admin" className="self-center text-yellow-400 font-semibold hover:text-yellow-300">
+                            <Link href="/admin" className="self-center text-yellow-400 font-semibold hover:text-yellow-300">
                                 Admin
                             </Link>
                         )}
@@ -34,10 +34,10 @@ const Navbar = () => {
                     </div>
                 ) : (
                     <div className="flex align-middle gap-8">
-                        <Link to="/auth/login" className="self-center">
+                        <Link href="/auth/login" className="self-center">
                             Login
                         </Link>
-                        <Link to="/auth/register" className="self-center">
+                        <Link href="/auth/register" className="self-center">
                             Register
                         </Link>
                     </div>

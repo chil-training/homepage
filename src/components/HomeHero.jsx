@@ -91,6 +91,16 @@ const HomeHero = ({ events, challenges, loggedIn }) => {
                 </section>
             </main>
         )}
+        <section className="w-full bg-slate-950 px-4 py-16">
+            <div className="mx-auto max-w-7xl">
+                <p className="text-center text-sm font-bold uppercase tracking-[0.2em] text-cyan-300">Supported by</p>
+                <div className="mt-10 flex flex-wrap items-center justify-center gap-x-16 gap-y-10">
+                    <img src="/images/chil-logo-white.png" alt="Civic Health Innovation Labs" className="h-10 w-auto object-contain" />
+                    <img src="/images/nhs-cheshire-merseyside-logo.png" alt="NHS Cheshire and Merseyside" className="h-16 w-auto object-contain" />
+                    <img src="/images/ols-logo-white.png" alt="OLS" className="h-16 w-auto object-contain" />
+                </div>
+            </div>
+        </section>
         <Footer />
         </>
     )

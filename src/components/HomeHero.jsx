@@ -17,7 +17,19 @@ const HomeHero = ({ events, challenges, loggedIn }) => {
         </Link>
       )}
       <section className={`w-full bg-gradient-to-tr from-blue-900 to-purple-950 px-4 pb-20 ${loggedIn ? "pt-16" : "pt-36"}`}>
-        <div className="mx-auto flex max-w-7xl items-center">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-10 flex flex-wrap items-center justify-start gap-6 sm:gap-8">
+            <img
+              src="/images/uol.png"
+              alt="University of Liverpool"
+              className="h-12 w-auto max-w-[45%] object-contain sm:h-16"
+            />
+            <img
+              src="/images/chil-logo-white.png"
+              alt="Civic Health Innovation Labs"
+              className="h-8 w-auto max-w-[45%] object-contain sm:h-10"
+            />
+          </div>
           <div className="flex flex-col justify-center">
             <p className="mb-5 text-sm font-bold uppercase tracking-[0.2em] text-cyan-300">Civic Health Innovation Labs</p>
             <h1 className="text-5xl font-bold text-white md:text-7xl">Data Action Accelerator</h1>

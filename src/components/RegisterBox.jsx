@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebase_config";
 import { setDoc, doc } from "firebase/firestore";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { AuthContext } from "../context/AuthContext";
 
 export default function RegisterBox() {
 
     const router = useRouter();
+    const { setUserMeta } = useContext(AuthContext);
     const [error, setError] = useState(null);
 
     const handleSubmit = async (e) => {
@@ -23,9 +25,17 @@ export default function RegisterBox() {
             // Add the user to Firestore with metadata
             await setDoc(doc(db, "users", user.uid), {
                 first_time: true,
-            }).then(() => {
-                router.push("/");
-            })
+            });
+
+            // AuthContext's onAuthStateChanged listener may have already read
+            // users/{uid} before this write landed, leaving userMeta null. Seed
+            // it here so /training renders the first-time setup form instead of
+            // waiting on a metadata load that will never happen.
+            setUserMeta({ first_time: true });
+
+            // Send new users to the training gateway, where FirstTimeSetup collects
+            // their details and course code.
+            router.push("/training/");
         } catch (error) {
             setError(error.message);
         }

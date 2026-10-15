@@ -19,15 +19,15 @@ const Navbar = () => {
             <div className="h-16 mx-auto container px-4 flex align-middle justify-between text-white">
                 <div className="flex align-middle items-center gap-8">
                     <Link href="/" className="text-2xl font-bold self-center">
-                        <h1 className="text-2xl font-bold self-center">CHIL Training</h1>
+                        <h1 className="text-2xl font-bold self-center">CHIL</h1>
                     </Link>
                     <Link href="/training/" className="self-center hover:text-slate-200">
-                        Training
+                        My Training
                     </Link>
                 </div>
                 {user ? (
                     <div className="flex align-middle gap-8">
-                        {userMeta && <p className="self-center block">Hi, {userMeta.nickname}</p>}
+                        {userMeta?.nickname && <p className="self-center block">Hi, {userMeta.nickname}</p>}
                         {userMeta && userMeta.admin && (
                             <Link href="/admin" className="self-center text-yellow-400 font-semibold hover:text-yellow-300">
                                 Admin

@@ -16,7 +16,7 @@ const Theme = () => {
     // Split slug into course_code, theme_id, and lesson_id 
     const [course_code, theme_id] = typeof themeId === "string" ? themeId.split("_") : [];
 
-    const { user, userMeta } = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
     const [guideData, setGuideData] = useState(null);
     const [themeData, setThemeData] = useState(null);
 
@@ -45,10 +45,10 @@ const Theme = () => {
     }
 
     useEffect(() => {
-        if (userMeta && userMeta.course_code && course_code && theme_id) {
+        if (user && course_code && theme_id) {
             fetchThemeData(course_code, theme_id);
         }
-    }, [userMeta, course_code, theme_id]);
+    }, [user, course_code, theme_id]);
 
 
     if (!user) {

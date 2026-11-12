@@ -33,8 +33,8 @@ export default function RegisterBox() {
             // waiting on a metadata load that will never happen.
             setUserMeta({ first_time: true });
 
-            // Send new users to the training gateway, where FirstTimeSetup collects
-            // their details and course code.
+            // Send new users to the training gateway, where FirstTimeSetup
+            // collects their nickname, role and professional details.
             router.push("/training/");
         } catch (error) {
             setError(error.message);

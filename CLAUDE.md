@@ -57,12 +57,12 @@ For the same reason, `src/utils/events.js` and `src/utils/firestoreRest.js` — 
 `src/context/AuthContext.jsx` (mounted in `pages/_app.jsx`) subscribes to `onAuthStateChanged` and, on sign-in, loads `users/{uid}` into `userMeta`. Everything downstream branches on these two values:
 
 - `user` — Firebase auth user. Falsy → routes render a "please log in" message.
-- `userMeta` — the Firestore user doc: `{ nickname, course_code, interests, organisation, first_time, admin }`. `null` while loading (render a loading state, never "access denied").
-- `userMeta.admin` — the only thing gating `/admin`. `userMeta.course_code` — the only thing scoping a user to course content.
+- `userMeta` — the Firestore user doc: `{ nickname, is_hcp_uk, role, first_time, admin }`. `null` while loading (render a loading state, never "access denied").
+- `userMeta.admin` — the only thing gating `/admin`. Any signed-in user can see every course; there is no per-course scoping.
 
 Because this is client-side only, Firestore security rules are the real access control. Never assume a check in a component is enforcement.
 
-The registration flow is two-step: `RegisterBox` creates the auth user and writes `users/{uid}` with only `{ first_time: true }`; `FirstTimeSetup` (rendered by `TrainingApp` when `first_time` is true) collects the rest, merges it with `first_time: false, admin: false`, then calls `router.reload()`.
+The registration flow is two-step: `RegisterBox` creates the auth user and writes `users/{uid}` with only `{ first_time: true }`; `FirstTimeSetup` (rendered by `TrainingApp` when `first_time` is true) collects a nickname, whether the user is a UK health care professional, and their role, merges it with `first_time: false, admin: false`, then calls `router.reload()`.
 
 ### Firestore data model
 
@@ -71,7 +71,7 @@ courses/{course_code}                      { title, description }
   themes/{theme_id}                        { title, description, index, audience? }
     guides/{guide_id}                      { title, index, videoId, markdown_content }
   events/{event_id}                        { title, description, audience, location, when, link, markdown_content? }
-users/{uid}                                { nickname, course_code, interests, organisation, first_time, admin }
+users/{uid}                                { nickname, is_hcp_uk, role, first_time, admin }
 hackathonChallenges/{slug}                 public, world-readable — see FIREBASE_HACKATHON_CHALLENGES.md
 ```
 

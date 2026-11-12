@@ -22,7 +22,7 @@ const Event = () => {
     // Split slug into course_code and event_id
     const [course_code, event_id] = typeof eventId === "string" ? eventId.split("_") : [];
 
-    const { user, userMeta } = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
     const [eventData, setEventData] = useState(null);
     const [missing, setMissing] = useState(false);
 
@@ -38,10 +38,10 @@ const Event = () => {
     }
 
     useEffect(() => {
-        if (userMeta && userMeta.course_code && course_code && event_id) {
+        if (user && course_code && event_id) {
             fetchEventData(course_code, event_id);
         }
-    }, [userMeta, course_code, event_id]);
+    }, [user, course_code, event_id]);
 
     if (!user) {
         return (

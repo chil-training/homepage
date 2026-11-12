@@ -13,7 +13,7 @@ const Guide = () => {
   const router = useRouter();
   const guideId = router.query.guideId;
 
-  const { user, userMeta } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [guideData, setGuideData] = useState(null);
 
   // Split slug into course_code, theme_id, and lesson_id
@@ -29,10 +29,10 @@ const Guide = () => {
   }
 
   useEffect(() => {
-    if (userMeta && userMeta.course_code && course_code && theme_id && guide_id) {
+    if (user && course_code && theme_id && guide_id) {
       fetchThemeData(course_code, theme_id, guide_id);
     }
-  }, [userMeta, course_code, theme_id, guide_id]);
+  }, [user, course_code, theme_id, guide_id]);
 
 
   return (

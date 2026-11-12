@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebase_config";
-import { setDoc, doc } from "firebase/firestore";
+import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { AuthContext } from "../context/AuthContext";
@@ -47,19 +47,23 @@ export default function RegisterBox() {
 
             // Write the complete profile up front so the user goes straight to
             // their training and never sees a separate first-time setup form.
-            const userMeta = {
+            await setDoc(doc(db, "users", user.uid), {
                 nickname,
                 is_hcp_uk,
                 role,
+                signed_up_at: serverTimestamp(),
                 admin: false,
-            };
-
-            await setDoc(doc(db, "users", user.uid), userMeta);
+            });
 
             // AuthContext's onAuthStateChanged listener may have already read
             // users/{uid} before this write landed, leaving userMeta null. Seed
             // it here so /training renders immediately.
-            setUserMeta(userMeta);
+            setUserMeta({
+                nickname,
+                is_hcp_uk,
+                role,
+                admin: false,
+            });
 
             router.push("/training/");
         } catch (error) {

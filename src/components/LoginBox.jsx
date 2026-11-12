@@ -9,6 +9,25 @@ const LoginBox = () => {
     const router = useRouter();
     const [error, setError] = useState(null);
 
+    const getLoginErrorMessage = (authError) => {
+        switch (authError.code) {
+            case "auth/invalid-credential":
+            case "auth/wrong-password":
+            case "auth/user-not-found":
+                return "Incorrect email or password. Please try again.";
+            case "auth/invalid-email":
+                return "Please enter a valid email address.";
+            case "auth/user-disabled":
+                return "This account has been disabled. Please contact support.";
+            case "auth/too-many-requests":
+                return "Too many unsuccessful attempts. Please wait a few minutes and try again.";
+            case "auth/network-request-failed":
+                return "Network error. Please check your connection and try again.";
+            default:
+                return "We couldn't log you in. Please try again.";
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const email = e.target[0].value;
@@ -17,9 +36,12 @@ const LoginBox = () => {
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 console.log("User logged in:", userCredential.user);
-                router.push("/")
+                // Send users straight to the training area so all of their
+                // course content is visible after signing in.
+                router.push("/training/")
             }).catch((error) => {
-                setError(error.message);
+                console.error("Login failed:", error);
+                setError(getLoginErrorMessage(error));
             });
     }
 

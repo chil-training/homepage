@@ -10,6 +10,7 @@ npm run build    # next build --webpack (the --webpack flag is required; Turbopa
                   # step (scripts/generate-seo-files.js) writes out/sitemap.xml and out/robots.txt
 npm run start    # serve the static export in ./out (npx serve out) — there is no Next server to start
 npm run lint     # eslint .
+npx firebase deploy --only firestore:rules   # deploy firestore.rules to hds-training-fa4f8
 ```
 
 There is no test framework in this project.
@@ -60,7 +61,7 @@ For the same reason, `src/utils/events.js` and `src/utils/firestoreRest.js` — 
 - `userMeta` — the Firestore user doc: `{ nickname, is_hcp_uk, role, first_time, admin }`. `null` while loading (render a loading state, never "access denied").
 - `userMeta.admin` — the only thing gating `/admin`. Any signed-in user can see every course; there is no per-course scoping.
 
-Because this is client-side only, Firestore security rules are the real access control. Never assume a check in a component is enforcement.
+Because this is client-side only, Firestore security rules are the real access control. Never assume a check in a component is enforcement. The live rules live in `firestore.rules` and are deployed separately from the site with `npx firebase deploy --only firestore:rules`; any signed-in learner may read every course, while only admins may write.
 
 The registration flow is two-step: `RegisterBox` creates the auth user and writes `users/{uid}` with only `{ first_time: true }`; `FirstTimeSetup` (rendered by `TrainingApp` when `first_time` is true) collects a nickname, whether the user is a UK health care professional, and their role, merges it with `first_time: false, admin: false`, then calls `router.reload()`.
 
@@ -95,7 +96,7 @@ Note the singular/plural distinction: **`/event` is the authenticated course eve
 
 ### Logged-in vs. logged-out homepage
 
-`src/routes/Dashboard.jsx` renders `HomeHero` (public CHIL marketing page: `UpcomingEvents` carousel plus `HackathonGrid`) when signed out, and `TrainingApp` (the user's course) when signed in. `pages/index.jsx` reads `src/data/events.js` (static) and `hackathonChallenges` (Firestore) in `getStaticProps` and threads them through `Dashboard` to `HomeHero`; the signed-in branch ignores them. `UpcomingEvents` takes that build-time list as `initialEvents` and renders it directly — no client refetch, and no refresh until the next deploy.
+`src/routes/Dashboard.jsx` always renders `HomeHero` (public CHIL marketing page: `UpcomingEvents` carousel plus `HackathonGrid`), adding a "looking for your training?" banner when signed in. Login and registration both send users to `/training`, where `TrainingApp` loads every course. `pages/index.jsx` reads `src/data/events.js` (static) and `hackathonChallenges` (Firestore) in `getStaticProps` and threads them through `Dashboard` to `HomeHero`. `UpcomingEvents` takes that build-time list as `initialEvents` and renders it directly — no client refetch, and no refresh until the next deploy.
 
 `src/components/Course.jsx` dispatches on the **exact course title string** `"Data Action Accelerator 2025/2026"` to select `DAALayout`; anything else gets a generic fallback layout. Renaming that course in Firestore silently changes the layout.
 

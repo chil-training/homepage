@@ -17,17 +17,14 @@ const Detail = ({ term, children }) => (
 const Event = () => {
 
     const router = useRouter();
-    const eventId = router.query.eventId;
-
-    // Split slug into course_code and event_id
-    const [course_code, event_id] = typeof eventId === "string" ? eventId.split("_") : [];
+    const event_id = router.query.eventId;
 
     const { user } = useContext(AuthContext);
     const [eventData, setEventData] = useState(null);
     const [missing, setMissing] = useState(false);
 
-    const fetchEventData = async (course_code, event_id) => {
-        const docRef = doc(db, "courses", course_code, "events", event_id);
+    const fetchEventData = async (event_id) => {
+        const docRef = doc(db, "events", event_id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -38,10 +35,10 @@ const Event = () => {
     }
 
     useEffect(() => {
-        if (user && course_code && event_id) {
-            fetchEventData(course_code, event_id);
+        if (user && typeof event_id === "string" && event_id) {
+            fetchEventData(event_id);
         }
-    }, [user, course_code, event_id]);
+    }, [user, event_id]);
 
     if (!user) {
         return (
@@ -54,7 +51,7 @@ const Event = () => {
     if (missing) {
         return (
             <div className="py-32 container mx-auto px-4">
-                <p>This event could not be found. <Link href="/" className="underline text-blue-700">Back to your course</Link>.</p>
+                <p>This event could not be found. <Link href="/training" className="underline text-blue-700">Back to your training</Link>.</p>
             </div>
         )
     }
@@ -65,7 +62,7 @@ const Event = () => {
 
     return (
         <div className="py-32 container mx-auto px-4">
-            <Link href="/" className="text-sm font-semibold text-blue-700 hover:underline">← Back to your course</Link>
+            <Link href="/training" className="text-sm font-semibold text-blue-700 hover:underline">← Back to your training</Link>
             <h1 className="mt-6 text-5xl font-bold text-gray-900">{eventData.title}</h1>
             {eventData.description && (
                 <p className="mt-4 max-w-3xl text-lg text-gray-600 leading-relaxed whitespace-pre-line">{eventData.description}</p>

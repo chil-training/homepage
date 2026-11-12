@@ -11,19 +11,16 @@ import CPDTrainingCard from "../components/CPDTrainingCard";
 const Theme = () => {
 
     const router = useRouter();
-    const themeId = router.query.themeId;
-
-    // Split slug into course_code, theme_id, and lesson_id 
-    const [course_code, theme_id] = typeof themeId === "string" ? themeId.split("_") : [];
+    const theme_id = router.query.themeId;
 
     const { user } = useContext(AuthContext);
     const [guideData, setGuideData] = useState(null);
     const [themeData, setThemeData] = useState(null);
 
 
-    const fetchThemeData = async (course_code, theme_id) => {
-        // Step 1: Get course document
-        const docRef = await doc(db, "courses", course_code, "themes", theme_id);
+    const fetchThemeData = async (theme_id) => {
+        // Step 1: Get theme document
+        const docRef = doc(db, "themes", theme_id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -45,10 +42,10 @@ const Theme = () => {
     }
 
     useEffect(() => {
-        if (user && course_code && theme_id) {
-            fetchThemeData(course_code, theme_id);
+        if (user && typeof theme_id === "string" && theme_id) {
+            fetchThemeData(theme_id);
         }
-    }, [user, course_code, theme_id]);
+    }, [user, theme_id]);
 
 
     if (!user) {
@@ -77,7 +74,7 @@ const Theme = () => {
                         <div>
                             <ul className="list-disc list-inside grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {guideData.map((guide, index) => (
-                                    <Link href={`/guide?guideId=${course_code}_${theme_id}_${guide.id}`} key={index}>
+                                    <Link href={`/guide?guideId=${theme_id}_${guide.id}`} key={index}>
                                         <Card item={guide} />
                                     </Link>
                                 ))}

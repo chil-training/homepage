@@ -123,144 +123,12 @@ const StatusBanner = ({ status }) => {
 };
 
 // ---------------------------------------------------------------------------
-// Courses Tab
-// ---------------------------------------------------------------------------
-
-const CoursesTab = () => {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null); // null | { mode: 'create'|'edit', data }
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [status, setStatus] = useState(null);
-
-  const [form, setForm] = useState({ id: "", title: "", description: "" });
-
-  const fetchCourses = async () => {
-    setLoading(true);
-    const snap = await getDocs(collection(db, "courses"));
-    setCourses(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchCourses(); }, []);
-
-  const openCreate = () => {
-    setForm({ id: "", title: "", description: "" });
-    setModal({ mode: "create" });
-  };
-
-  const openEdit = (course) => {
-    setForm({ id: course.id, title: course.title || "", description: course.description || "" });
-    setModal({ mode: "edit" });
-  };
-
-  const handleSave = async () => {
-    if (!form.id.trim() || !form.title.trim()) {
-      setStatus({ type: "error", message: "Course ID and Title are required." });
-      return;
-    }
-    try {
-      await setDoc(doc(db, "courses", form.id.trim()), {
-        title: form.title.trim(),
-        description: form.description.trim(),
-      }, { merge: true });
-      setStatus({ type: "success", message: modal.mode === "create" ? "Course created." : "Course updated." });
-      setModal(null);
-      fetchCourses();
-    } catch (e) {
-      setStatus({ type: "error", message: e.message });
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      await deleteDoc(doc(db, "courses", deleteTarget.id));
-      setStatus({ type: "success", message: "Course deleted." });
-      setDeleteTarget(null);
-      fetchCourses();
-    } catch (e) {
-      setStatus({ type: "error", message: e.message });
-    }
-  };
-
-  return (
-    <div>
-      <StatusBanner status={status} />
-      <SectionHeader title="Courses" onAdd={openCreate} />
-
-      {loading ? (
-        <p className="text-gray-500 text-sm">Loading...</p>
-      ) : courses.length === 0 ? (
-        <p className="text-gray-500 text-sm">No courses found.</p>
-      ) : (
-        <div className="grid gap-3">
-          {courses.map((course) => (
-            <div key={course.id} className="border border-gray-200 rounded-lg p-4 flex items-start justify-between gap-4 bg-white">
-              <div>
-                <p className="font-semibold text-gray-900">{course.title}</p>
-                <p className="text-xs text-gray-500 font-mono mt-0.5">ID: {course.id}</p>
-                {course.description && <p className="text-sm text-gray-600 mt-1 line-clamp-2">{course.description}</p>}
-              </div>
-              <div className="flex gap-2 shrink-0">
-                <Btn variant="ghost" onClick={() => openEdit(course)}>Edit</Btn>
-                <Btn variant="danger" onClick={() => setDeleteTarget(course)}>Delete</Btn>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {modal && (
-        <Modal title={modal.mode === "create" ? "New Course" : "Edit Course"} onClose={() => setModal(null)}>
-          <div className="flex flex-col gap-4">
-            <Input
-              label="Course ID (used in URLs, e.g. DAA)"
-              value={form.id}
-              onChange={(v) => setForm((f) => ({ ...f, id: v }))}
-              placeholder="DAA"
-              disabled={modal.mode === "edit"}
-            />
-            <Input
-              label="Title"
-              value={form.title}
-              onChange={(v) => setForm((f) => ({ ...f, title: v }))}
-              placeholder="Data Action Accelerator 2025/2026"
-            />
-            <Textarea
-              label="Description"
-              value={form.description}
-              onChange={(v) => setForm((f) => ({ ...f, description: v }))}
-              placeholder="Course description..."
-            />
-            <div className="flex gap-3 justify-end pt-2">
-              <Btn variant="ghost" onClick={() => setModal(null)}>Cancel</Btn>
-              <Btn onClick={handleSave}>Save</Btn>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {deleteTarget && (
-        <ConfirmModal
-          message={`Delete course "${deleteTarget.title}" (${deleteTarget.id})? This will not delete subcollections automatically.`}
-          onConfirm={handleDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      )}
-    </div>
-  );
-};
-
-// ---------------------------------------------------------------------------
 // Themes Tab
 // ---------------------------------------------------------------------------
 
 const ThemesTab = () => {
-  const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState("");
   const [themes, setThemes] = useState([]);
-  const [loadingCourses, setLoadingCourses] = useState(true);
-  const [loadingThemes, setLoadingThemes] = useState(false);
+  const [loadingThemes, setLoadingThemes] = useState(true);
   const [modal, setModal] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [status, setStatus] = useState(null);
@@ -268,39 +136,16 @@ const ThemesTab = () => {
   const emptyForm = { id: "", title: "", description: "", index: "0", audience: "" };
   const [form, setForm] = useState(emptyForm);
 
-  useEffect(() => {
-    const load = async () => {
-      const snap = await getDocs(collection(db, "courses"));
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setCourses(list);
-      setLoadingCourses(false);
-      if (list.length > 0) setSelectedCourse(list[0].id);
-    };
-    load();
-  }, []);
-
-  useEffect(() => {
-    if (!selectedCourse) return;
-    const load = async () => {
-      setLoadingThemes(true);
-      const snap = await getDocs(collection(db, "courses", selectedCourse, "themes"));
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      list.sort((a, b) => (a.index ?? 99) - (b.index ?? 99));
-      setThemes(list);
-      setLoadingThemes(false);
-    };
-    load();
-  }, [selectedCourse]);
-
   const refreshThemes = async () => {
-    if (!selectedCourse) return;
     setLoadingThemes(true);
-    const snap = await getDocs(collection(db, "courses", selectedCourse, "themes"));
+    const snap = await getDocs(collection(db, "themes"));
     const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     list.sort((a, b) => (a.index ?? 99) - (b.index ?? 99));
     setThemes(list);
     setLoadingThemes(false);
   };
+
+  useEffect(() => { refreshThemes(); }, []);
 
   const openCreate = () => {
     setForm(emptyForm);
@@ -325,7 +170,7 @@ const ThemesTab = () => {
     }
     try {
       await setDoc(
-        doc(db, "courses", selectedCourse, "themes", form.id.trim()),
+        doc(db, "themes", form.id.trim()),
         {
           title: form.title.trim(),
           description: form.description.trim(),
@@ -344,7 +189,7 @@ const ThemesTab = () => {
 
   const handleDelete = async () => {
     try {
-      await deleteDoc(doc(db, "courses", selectedCourse, "themes", deleteTarget.id));
+      await deleteDoc(doc(db, "themes", deleteTarget.id));
       setStatus({ type: "success", message: "Theme deleted." });
       setDeleteTarget(null);
       refreshThemes();
@@ -356,29 +201,12 @@ const ThemesTab = () => {
   return (
     <div>
       <StatusBanner status={status} />
-      <div className="mb-4 flex items-center gap-3">
-        <label className="text-sm font-semibold text-gray-700">Course</label>
-        {loadingCourses ? (
-          <p className="text-sm text-gray-500">Loading courses...</p>
-        ) : (
-          <select
-            value={selectedCourse}
-            onChange={(e) => setSelectedCourse(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
-          >
-            {courses.map((c) => (
-              <option key={c.id} value={c.id}>{c.title || c.id}</option>
-            ))}
-          </select>
-        )}
-      </div>
-
-      <SectionHeader title="Themes" onAdd={selectedCourse ? openCreate : undefined} />
+      <SectionHeader title="Themes" onAdd={openCreate} />
 
       {loadingThemes ? (
         <p className="text-gray-500 text-sm">Loading...</p>
       ) : themes.length === 0 ? (
-        <p className="text-gray-500 text-sm">No themes found for this course.</p>
+        <p className="text-gray-500 text-sm">No themes found.</p>
       ) : (
         <div className="grid gap-3">
           {themes.map((theme) => (
@@ -457,13 +285,10 @@ const ThemesTab = () => {
 // ---------------------------------------------------------------------------
 
 const GuidesTab = () => {
-  const [courses, setCourses] = useState([]);
   const [themes, setThemes] = useState([]);
   const [guides, setGuides] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedTheme, setSelectedTheme] = useState("");
-  const [loadingCourses, setLoadingCourses] = useState(true);
-  const [loadingThemes, setLoadingThemes] = useState(false);
+  const [loadingThemes, setLoadingThemes] = useState(true);
   const [loadingGuides, setLoadingGuides] = useState(false);
   const [modal, setModal] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -473,26 +298,10 @@ const GuidesTab = () => {
   const emptyForm = { id: "", title: "", description: "", index: "0", audience: "", videoId: "", markdown_content: "" };
   const [form, setForm] = useState(emptyForm);
 
-  // Load courses
+  // Load themes
   useEffect(() => {
     const load = async () => {
-      const snap = await getDocs(collection(db, "courses"));
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setCourses(list);
-      setLoadingCourses(false);
-      if (list.length > 0) setSelectedCourse(list[0].id);
-    };
-    load();
-  }, []);
-
-  // Load themes when course changes
-  useEffect(() => {
-    if (!selectedCourse) return;
-    const load = async () => {
-      setLoadingThemes(true);
-      setThemes([]);
-      setSelectedTheme("");
-      const snap = await getDocs(collection(db, "courses", selectedCourse, "themes"));
+      const snap = await getDocs(collection(db, "themes"));
       const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       list.sort((a, b) => (a.index ?? 99) - (b.index ?? 99));
       setThemes(list);
@@ -500,26 +309,26 @@ const GuidesTab = () => {
       if (list.length > 0) setSelectedTheme(list[0].id);
     };
     load();
-  }, [selectedCourse]);
+  }, []);
 
   // Load guides when theme changes
   useEffect(() => {
-    if (!selectedCourse || !selectedTheme) return;
+    if (!selectedTheme) return;
     const load = async () => {
       setLoadingGuides(true);
-      const snap = await getDocs(collection(db, "courses", selectedCourse, "themes", selectedTheme, "guides"));
+      const snap = await getDocs(collection(db, "themes", selectedTheme, "guides"));
       const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       list.sort((a, b) => (a.index ?? 99) - (b.index ?? 99));
       setGuides(list);
       setLoadingGuides(false);
     };
     load();
-  }, [selectedCourse, selectedTheme]);
+  }, [selectedTheme]);
 
   const refreshGuides = async () => {
-    if (!selectedCourse || !selectedTheme) return;
+    if (!selectedTheme) return;
     setLoadingGuides(true);
-    const snap = await getDocs(collection(db, "courses", selectedCourse, "themes", selectedTheme, "guides"));
+    const snap = await getDocs(collection(db, "themes", selectedTheme, "guides"));
     const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     list.sort((a, b) => (a.index ?? 99) - (b.index ?? 99));
     setGuides(list);
@@ -553,7 +362,7 @@ const GuidesTab = () => {
     }
     try {
       await setDoc(
-        doc(db, "courses", selectedCourse, "themes", selectedTheme, "guides", form.id.trim()),
+        doc(db, "themes", selectedTheme, "guides", form.id.trim()),
         {
           title: form.title.trim(),
           description: form.description.trim(),
@@ -574,7 +383,7 @@ const GuidesTab = () => {
 
   const handleDelete = async () => {
     try {
-      await deleteDoc(doc(db, "courses", selectedCourse, "themes", selectedTheme, "guides", deleteTarget.id));
+      await deleteDoc(doc(db, "themes", selectedTheme, "guides", deleteTarget.id));
       setStatus({ type: "success", message: "Guide deleted." });
       setDeleteTarget(null);
       refreshGuides();
@@ -587,22 +396,6 @@ const GuidesTab = () => {
     <div>
       <StatusBanner status={status} />
       <div className="mb-4 flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-semibold text-gray-700">Course</label>
-          {loadingCourses ? (
-            <p className="text-sm text-gray-500">Loading...</p>
-          ) : (
-            <select
-              value={selectedCourse}
-              onChange={(e) => setSelectedCourse(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
-            >
-              {courses.map((c) => (
-                <option key={c.id} value={c.id}>{c.title || c.id}</option>
-              ))}
-            </select>
-          )}
-        </div>
         <div className="flex items-center gap-2">
           <label className="text-sm font-semibold text-gray-700">Theme</label>
           {loadingThemes ? (
@@ -622,7 +415,7 @@ const GuidesTab = () => {
         </div>
       </div>
 
-      <SectionHeader title="Guides" onAdd={selectedCourse && selectedTheme ? openCreate : undefined} />
+      <SectionHeader title="Guides" onAdd={selectedTheme ? openCreate : undefined} />
 
       {loadingGuides ? (
         <p className="text-gray-500 text-sm">Loading...</p>
@@ -640,7 +433,7 @@ const GuidesTab = () => {
               </div>
               <div className="flex gap-2 shrink-0">
                 <Link
-                  href={`/guide?guideId=${selectedCourse}_${selectedTheme}_${guide.id}`}
+                  href={`/guide?guideId=${selectedTheme}_${guide.id}`}
                   target="_blank"
                   className="px-4 py-2 rounded-md text-sm font-semibold bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors"
                 >
@@ -755,14 +548,13 @@ const MarkdownPreview = ({ content }) => (
 // ---------------------------------------------------------------------------
 
 const TABS = [
-  { id: "courses", label: "Courses" },
   { id: "themes", label: "Themes" },
   { id: "guides", label: "Guides" },
 ];
 
 const Admin = () => {
   const { user, userMeta } = useContext(AuthContext);
-  const [activeTab, setActiveTab] = useState("courses");
+  const [activeTab, setActiveTab] = useState("themes");
 
   if (!user) {
     return (
@@ -788,7 +580,7 @@ const Admin = () => {
     <div className="py-32 container mx-auto px-4">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900">Admin Panel</h1>
-        <p className="text-gray-500 mt-1 text-sm">Manage courses, themes and guides directly in the browser.</p>
+        <p className="text-gray-500 mt-1 text-sm">Manage themes and guides directly in the browser.</p>
       </div>
 
       {/* Tab bar */}
@@ -809,7 +601,6 @@ const Admin = () => {
       </div>
 
       {/* Tab content */}
-      {activeTab === "courses" && <CoursesTab />}
       {activeTab === "themes" && <ThemesTab />}
       {activeTab === "guides" && <GuidesTab />}
     </div>

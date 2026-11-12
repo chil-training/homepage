@@ -14,24 +14,19 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Any signed-in learner can read every course and its content. Only admins
-    // can create or change it.
-    match /courses/{courseId} {
+    // Any signed-in learner can read every theme and guide. Only admins can
+    // create or change them.
+    match /themes/{themeId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
 
-    match /courses/{courseId}/themes/{themeId} {
+    match /themes/{themeId}/guides/{guideId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
 
-    match /courses/{courseId}/themes/{themeId}/guides/{guideId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    match /courses/{courseId}/{document=**} {
+    match /events/{eventId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }

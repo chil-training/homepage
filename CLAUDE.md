@@ -45,7 +45,7 @@ Unlike everything else, public CHIL events are **not** stored in Firestore. They
 
 The Firebase JS SDK is browser-only here, so `src/utils/firestoreRest.js` reads Firestore over its REST API for `getStaticProps`/`getStaticPaths` (and for `scripts/generate-seo-files.js`, run as a plain Node script — see "Deployment"). It decodes Firestore's typed value wrappers and returns timestamps as ISO strings (props must be JSON-serialisable; `asDate()` in `src/utils/dates.js` accepts both those strings and real `Timestamp` objects). Because these run at `next build` time rather than per-request, their output is only as fresh as the last deploy.
 
-This works **only for collections whose rules allow unauthenticated reads** — currently just `hackathonChallenges` (public events moved to static data, see above). It has no user credentials, so never route authenticated course content through it. Read failures return `null`/`[]` rather than throwing, so a missing rule degrades to a hidden section (or, for `getStaticPaths`, zero generated pages) rather than a broken build.
+This works **only for collections whose rules allow unauthenticated reads** — currently just `hackathonChallenges` (public events moved to static data, see above). It has no user credentials, so never route authenticated training content through it. Read failures return `null`/`[]` rather than throwing, so a missing rule degrades to a hidden section (or, for `getStaticPaths`, zero generated pages) rather than a broken build.
 
 ### Firebase is browser-only
 
@@ -59,26 +59,25 @@ For the same reason, `src/utils/events.js` and `src/utils/firestoreRest.js` — 
 
 - `user` — Firebase auth user. Falsy → routes render a "please log in" message.
 - `userMeta` — the Firestore user doc: `{ nickname, is_hcp_uk, role, first_time, admin }`. `null` while loading (render a loading state, never "access denied").
-- `userMeta.admin` — the only thing gating `/admin`. Any signed-in user can see every course; there is no per-course scoping.
+- `userMeta.admin` — the only thing gating `/admin`. Any signed-in user can see every theme; there is no per-user content scoping.
 
-Because this is client-side only, Firestore security rules are the real access control. Never assume a check in a component is enforcement. The live rules live in `firestore.rules` and are deployed separately from the site with `npx firebase deploy --only firestore:rules`; any signed-in learner may read every course, while only admins may write.
+Because this is client-side only, Firestore security rules are the real access control. Never assume a check in a component is enforcement. The live rules live in `firestore.rules` and are deployed separately from the site with `npx firebase deploy --only firestore:rules`; any signed-in learner may read every theme and guide, while only admins may write.
 
 The registration flow is two-step: `RegisterBox` creates the auth user and writes `users/{uid}` with only `{ first_time: true }`; `FirstTimeSetup` (rendered by `TrainingApp` when `first_time` is true) collects a nickname, whether the user is a UK health care professional, and their role, merges it with `first_time: false, admin: false`, then calls `router.reload()`.
 
 ### Firestore data model
 
 ```
-courses/{course_code}                      { title, description }
-  themes/{theme_id}                        { title, description, index, audience? }
-    guides/{guide_id}                      { title, index, videoId, markdown_content }
-  events/{event_id}                        { title, description, audience, location, when, link, markdown_content? }
+themes/{theme_id}                          { title, description, long_description?, index, audience? }
+  guides/{guide_id}                        { title, index, videoId, markdown_content }
+events/{event_id}                          { title, description, audience, location, when, link, markdown_content? }
 users/{uid}                                { nickname, is_hcp_uk, role, first_time, admin }
 hackathonChallenges/{slug}                 public, world-readable — see FIREBASE_HACKATHON_CHALLENGES.md
 ```
 
 Public CHIL events are **not** a Firestore collection — see "Public events are static data, not Firestore" above and `src/data/events.js`.
 
-`themes.index` drives ordering; **index 0 is the "primary" theme** given hero treatment by `DAALayout`.
+`themes.index` drives ordering; **index 0 is the "primary" theme** given hero treatment by `ThemesLayout`.
 
 `hackathonChallenges` must allow unauthenticated reads or `/challenges` builds with zero challenge pages (see "Build-time Firestore reads" — a denied read degrades to an empty `getStaticPaths` list, not a build failure). Challenge colours are stored as an accent **name** (`rose`, `sky`, …) resolved through the static map in `src/data/challengeAccents.js` — never as class strings, because Tailwind only ships classes it finds written out in source, and a class name built from a database value would be missing from the CSS.
 
@@ -86,25 +85,25 @@ Public CHIL events are **not** a Firestore collection — see "Public events are
 
 Nested Firestore paths are flattened into a single query-string value joined by `_` and split back with `.split("_")`:
 
-- `/theme?themeId={course_code}_{theme_id}`
-- `/guide?guideId={course_code}_{theme_id}_{guide_id}`
-- `/event?eventId={course_code}_{event_id}`
+- `/theme?themeId={theme_id}`
+- `/guide?guideId={theme_id}_{guide_id}`
+- `/event?eventId={event_id}`
 
 **Document IDs must therefore never contain an underscore** — the split is positional and will silently mis-address the document.
 
-Note the singular/plural distinction: **`/event` is the authenticated course event** (Firestore, underscore-joined `eventId` query param, noindexed), while **`/events/*` is the public CHIL hackathon series** (static data from `src/data/events.js`, plain `id` path segment, indexed). They are different data sources, different fetch strategies, and different URL shapes (query string vs. path segment).
+Note the singular/plural distinction: **`/event` is the authenticated training event** (Firestore, plain `eventId` query param, noindexed), while **`/events/*` is the public CHIL hackathon series** (static data from `src/data/events.js`, plain `id` path segment, indexed). They are different data sources, different fetch strategies, and different URL shapes (query string vs. path segment).
 
 ### Logged-in vs. logged-out homepage
 
-`src/routes/Dashboard.jsx` always renders `HomeHero` (public CHIL marketing page: `UpcomingEvents` carousel plus `HackathonGrid`), adding a "looking for your training?" banner when signed in. Login and registration both send users to `/training`, where `TrainingApp` loads every course. `pages/index.jsx` reads `src/data/events.js` (static) and `hackathonChallenges` (Firestore) in `getStaticProps` and threads them through `Dashboard` to `HomeHero`. `UpcomingEvents` takes that build-time list as `initialEvents` and renders it directly — no client refetch, and no refresh until the next deploy.
+`src/routes/Dashboard.jsx` always renders `HomeHero` (public CHIL marketing page: `UpcomingEvents` carousel plus `HackathonGrid`), adding a "looking for your training?" banner when signed in. Login and registration both send users to `/training`, where `TrainingApp` loads every theme. `pages/index.jsx` reads `src/data/events.js` (static) and `hackathonChallenges` (Firestore) in `getStaticProps` and threads them through `Dashboard` to `HomeHero`. `UpcomingEvents` takes that build-time list as `initialEvents` and renders it directly — no client refetch, and no refresh until the next deploy.
 
-`src/components/Course.jsx` dispatches on the **exact course title string** `"Data Action Accelerator 2025/2026"` to select `DAALayout`; anything else gets a generic fallback layout. Renaming that course in Firestore silently changes the layout.
+`src/layouts/ThemesLayout.jsx` renders the flattened theme list, giving the theme at `index: 0` (or the first theme) the primary card treatment.
 
 ### Admin panel
 
-`src/routes/Admin.jsx` is a single ~1000-line file holding its own mini UI kit (`Input`, `Select`, `Checkbox`, `Textarea`, `Btn`, `Modal`, `ConfirmModal`, `StatusBanner`) plus `CoursesTab` / `ThemesTab` / `GuidesTab` / `ChallengesTab`. Each tab is a self-contained CRUD form writing directly to Firestore with `setDoc(..., { merge: true })` and `deleteDoc`. Deletes are **not** recursive — deleting a course leaves its `themes`/`guides` subcollections orphaned.
+`src/routes/Admin.jsx` is a single ~700-line file holding its own mini UI kit (`Input`, `Select`, `Checkbox`, `Textarea`, `Btn`, `Modal`, `ConfirmModal`, `StatusBanner`) plus `ThemesTab` and `GuidesTab`. Each tab is a self-contained CRUD form writing directly to Firestore with `setDoc(..., { merge: true })` and `deleteDoc`. Deletes are **not** recursive — deleting a theme leaves its `guides` subcollection orphaned.
 
-`ChallengesTab` edits the public `hackathonChallenges` collection and, on an empty collection, offers a seed button that writes the ten defaults from `src/data/defaultChallenges.js`, skipping any that already exist.
+Challenges are not edited in the admin panel; the public `hackathonChallenges` collection is managed separately (see `FIREBASE_HACKATHON_CHALLENGES.md`).
 
 ## Deployment
 

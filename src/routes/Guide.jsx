@@ -16,11 +16,11 @@ const Guide = () => {
   const { user } = useContext(AuthContext);
   const [guideData, setGuideData] = useState(null);
 
-  // Split slug into course_code, theme_id, and lesson_id
-  const [course_code, theme_id, guide_id] = typeof guideId === "string" ? guideId.split("_") : [];
+  // Split slug into theme_id and guide_id
+  const [theme_id, guide_id] = typeof guideId === "string" ? guideId.split("_") : [];
 
-  const fetchThemeData = async (course_code, theme_id, guide_id) => {
-    const docRef = doc(db, "courses", course_code, "themes", theme_id, "guides", guide_id);
+  const fetchGuideData = async (theme_id, guide_id) => {
+    const docRef = doc(db, "themes", theme_id, "guides", guide_id);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
@@ -29,10 +29,10 @@ const Guide = () => {
   }
 
   useEffect(() => {
-    if (user && course_code && theme_id && guide_id) {
-      fetchThemeData(course_code, theme_id, guide_id);
+    if (user && theme_id && guide_id) {
+      fetchGuideData(theme_id, guide_id);
     }
-  }, [user, course_code, theme_id, guide_id]);
+  }, [user, theme_id, guide_id]);
 
 
   return (

@@ -22,12 +22,17 @@ const HomeHero = ({ events, challenges, loggedIn }) => {
             <img
               src="/images/uol.png"
               alt="University of Liverpool"
-              className="h-12 w-auto max-w-[45%] object-contain sm:h-16"
+              className="h-7 w-auto max-w-[45%] object-contain sm:h-8"
             />
             <img
               src="/images/chil-logo-white.png"
               alt="Civic Health Innovation Labs"
-              className="h-8 w-auto max-w-[45%] object-contain sm:h-10"
+              className="h-[17px] w-auto max-w-[45%] object-contain sm:h-[19px]"
+            />
+            <img
+              src="/images/chi-zone-logo-white.png"
+              alt="CHI-Zone"
+              className="h-7 w-auto max-w-[45%] object-contain sm:h-8"
             />
           </div>
           <div className="flex flex-col justify-center">
@@ -109,6 +114,7 @@ const HomeHero = ({ events, challenges, loggedIn }) => {
           <div className="mt-10 flex flex-wrap items-center justify-center gap-x-16 gap-y-10">
             <img src="/images/uol.png" alt="University of Liverpool" className="h-16 w-auto object-contain" />
             <img src="/images/chil-logo-white.png" alt="Civic Health Innovation Labs" className="h-10 w-auto object-contain" />
+            <img src="/images/chi-zone-logo-white.png" alt="CHI-Zone" className="h-[54px] w-auto object-contain" />
             <img src="/images/nhs-cheshire-merseyside-logo.png" alt="NHS Cheshire and Merseyside" className="h-16 w-auto object-contain" />
             <img src="/images/ols-logo-white.png" alt="OLS" className="h-16 w-auto object-contain" />
           </div>

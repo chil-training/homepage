@@ -63,7 +63,7 @@ For the same reason, `src/utils/events.js` and `src/utils/firestoreRest.js` — 
 
 Because this is client-side only, Firestore security rules are the real access control. Never assume a check in a component is enforcement. The live rules live in `firestore.rules` and are deployed separately from the site with `npx firebase deploy --only firestore:rules`; any signed-in learner may read every theme and guide, while only admins may write.
 
-The registration flow is two-step: `RegisterBox` creates the auth user and writes `users/{uid}` with only `{ first_time: true }`; `FirstTimeSetup` (rendered by `TrainingApp` when `first_time` is true) collects a nickname, whether the user is a UK health care professional, and their role, merges it with `first_time: false, admin: false`, then calls `router.reload()`.
+Registration is a single step: `RegisterBox` creates the auth user, writes the complete `users/{uid}` profile (`nickname`, `is_hcp_uk`, `role`, `first_time: false`, `admin: false`), then sends the user to `/training`. `FirstTimeSetup` remains only as a fallback for legacy accounts whose document still has `first_time: true`.
 
 ### Firestore data model
 

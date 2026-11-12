@@ -58,12 +58,12 @@ For the same reason, `src/utils/events.js` and `src/utils/firestoreRest.js` — 
 `src/context/AuthContext.jsx` (mounted in `pages/_app.jsx`) subscribes to `onAuthStateChanged` and, on sign-in, loads `users/{uid}` into `userMeta`. Everything downstream branches on these two values:
 
 - `user` — Firebase auth user. Falsy → routes render a "please log in" message.
-- `userMeta` — the Firestore user doc: `{ nickname, is_hcp_uk, role, first_time, admin }`. `null` while loading (render a loading state, never "access denied").
+- `userMeta` — the Firestore user doc: `{ nickname, is_hcp_uk, role, admin }`. `null` while loading (render a loading state, never "access denied").
 - `userMeta.admin` — the only thing gating `/admin`. Any signed-in user can see every theme; there is no per-user content scoping.
 
 Because this is client-side only, Firestore security rules are the real access control. Never assume a check in a component is enforcement. The live rules live in `firestore.rules` and are deployed separately from the site with `npx firebase deploy --only firestore:rules`; any signed-in learner may read every theme and guide, while only admins may write.
 
-Registration is a single step: `RegisterBox` creates the auth user, writes the complete `users/{uid}` profile (`nickname`, `is_hcp_uk`, `role`, `first_time: false`, `admin: false`), then sends the user to `/training`. `FirstTimeSetup` remains only as a fallback for legacy accounts whose document still has `first_time: true`.
+Registration is a single step: `RegisterBox` creates the auth user, writes the complete `users/{uid}` profile (`nickname`, `is_hcp_uk`, `role`, `admin: false`), then sends the user to `/training`. There is no separate first-time setup flow; signing in always loads the training themes.
 
 ### Firestore data model
 
@@ -71,7 +71,7 @@ Registration is a single step: `RegisterBox` creates the auth user, writes the c
 themes/{theme_id}                          { title, description, long_description?, index, audience? }
   guides/{guide_id}                        { title, index, videoId, markdown_content }
 events/{event_id}                          { title, description, audience, location, when, link, markdown_content? }
-users/{uid}                                { nickname, is_hcp_uk, role, first_time, admin }
+users/{uid}                                { nickname, is_hcp_uk, role, admin }
 hackathonChallenges/{slug}                 public, world-readable — see FIREBASE_HACKATHON_CHALLENGES.md
 ```
 

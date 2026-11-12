@@ -3,14 +3,13 @@ import { AuthContext } from "../context/AuthContext";
 import { db } from "../firebase_config";
 import { getDocs, collection } from "firebase/firestore";
 import ThemesLayout from "../layouts/ThemesLayout";
-import FirstTimeSetup from "./FirstTimeSetup";
 
 
 const TrainingApp = () => {
 
     const [themes, setThemes] = useState(null);
     const [error, setError] = useState(null);
-    const { user, userMeta } = useContext(AuthContext);
+    const { userMeta } = useContext(AuthContext);
 
     const fetchThemes = async () => {
         try {
@@ -26,14 +25,12 @@ const TrainingApp = () => {
     }
 
     useEffect(() => {
-        if (userMeta && !userMeta.first_time) {
+        if (userMeta) {
             fetchThemes();
         }
     }, [userMeta]);
 
-    if (userMeta && userMeta.first_time) {
-        return <FirstTimeSetup uid={user.uid} />;
-    } else if (error) {
+    if (error) {
         return (
             <div className="py-32 container mx-auto px-4">
                 <p className="text-red-600">{error}</p>

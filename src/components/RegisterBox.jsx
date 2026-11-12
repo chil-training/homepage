@@ -51,7 +51,6 @@ export default function RegisterBox() {
                 nickname,
                 is_hcp_uk,
                 role,
-                first_time: false,
                 admin: false,
             };
 
